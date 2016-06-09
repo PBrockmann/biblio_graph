@@ -288,13 +288,14 @@ function updateNotes(d) {
     rowChart.append("g").attr("class", "xaxis");
 
     // maxDomain is the max of publications round by 10
-    var maxDomain = 40;
+    var maxDomain = 60;
+    var delta = 10;
 
     var xScale = d3.scale.linear()
       .domain([0, maxDomain])
       .range([0, chartWidth]);
 
-    var colorsNb = 8;    // maxDomain / 5
+    var colorsNb = maxDomain / delta;  			// Must be integer and <= 9 
     //var colors = colorbrewer["YlGnBu"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
     var colors = colorbrewer["YlOrRd"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
     var colorScale = d3.scale.quantize()
@@ -336,10 +337,9 @@ function updateNotes(d) {
     .text(function(d) { return d.value; })
     .attr("x", function(d) { return xScale(d.value); })
     .attr("y", function(d, i) { return i * barHeight; })
-    .attr("dx", -3)
+    .attr("dx", 20)
     .attr("dy", "1.25em")
-    .attr("text-anchor", "end")
-    .style("font-weight", "bold");
+    .attr("text-anchor", "end");
 
     bars.append("text")
     .text(function(d) { return d.name; })
