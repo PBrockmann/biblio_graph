@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 <script type='text/javascript' src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
 <script type='text/javascript' src="http://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.6.7/d3-tip.min.js"></script>
@@ -308,8 +308,8 @@ function updateNotes(d) {
       .domain([0, maxDomain])
       .range([0, chartWidth]);
 
-    var colorsNb = 8;
-    var colors = colorbrewer["YlGnBu"][colorsNb];
+    var colorsNb = 8;    // maxDomain / 5
+    var colors = colorbrewer["YlGnBu"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
     var colorScale = d3.scale.quantize()
       .domain([0, maxDomain])
       .range(colors);
@@ -320,14 +320,14 @@ function updateNotes(d) {
      .append("g");
 
     xaxis.append("line")
-    .attr("x1", xScale)
-    .attr("x2", xScale)
+    .attr("x1", function(d) { return Math.floor(xScale(d)); })
+    .attr("x2", function(d) { return Math.floor(xScale(d)); })
     .attr("y1", 0)
     .attr("y2", 20 * list_authors.length)
     .attr("stroke", "#ccc");
 
     xaxis.append("text")
-    .attr("x", xScale)
+    .attr("x", function(d) { return Math.floor(xScale(d)); })
     .attr("y", 20 * list_authors.length + 10)
     .attr("dy", 5)
     .attr("text-anchor", "middle")
@@ -340,13 +340,13 @@ function updateNotes(d) {
 
     bars.append("rect")
     .attr("y", function(d, i) { return i * 20; })
-    .attr("width", function(d) { return xScale(d.value); })
+    .attr("width", function(d) { return Math.floor(xScale(d.value)); })
     .attr("height", 20)
     .attr("fill", function(d) { return colorScale(d.value); });
 
     bars.append("text")
     .text(function(d) { return d.value; })
-    .attr("x", function(d) { return xScale(d.value); })
+    .attr("x", function(d) { return Math.floor(xScale(d.value); })
     .attr("y", function(d, i) { return i * 20 + 10; })
     .attr("dx", -3)
     .attr("dy", ".35em")
