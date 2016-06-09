@@ -12,24 +12,25 @@
 
 <style>
 #graphLayout {
-    float: left;
-    position: relative;
+  float: left;
+  position: relative;
 }
 #notes {
-    float: left;
-    margin-left: 20px;
-    font: 12px sans-serif;
+  float: left;
+  margin-left: 20px;
+  font: 12px sans-serif;
 }
 .rowChart rect {
-   stroke: gray;
+  stroke: gray;
+  stroke-width: 2;  
 }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
-    font-family: sans-serif;
-    font-size: 12px;
+  font-family: sans-serif;
+  font-size: 12px;
 }
 .link {
   stroke: #999;
-  stroke-opacity: .6;
+  stroke-opacity: .7;
 }
 .node text {
   font: 10px sans-serif;
@@ -46,8 +47,6 @@
     border-width: 2px;
     border-color: #000;
     border-radius: 8px;
-}
-.nodetip {
     background: #AAA;
 }
 </style>
@@ -65,7 +64,7 @@ var graphLayout = d3.select("#graphLayout").append("svg")
 var color = d3.scale.category20();
 
 var nodetip = d3.tip()
-    .attr('class', 'd3-tip nodetip')
+    .attr('class', 'd3-tip')
     .offset([-20, 0])
     .html(function (d) {
         return d.nb + " publications";
@@ -275,11 +274,15 @@ function updateNotes(d) {
     // Build a row chart
     var chartWidth = 300;
     var barHeight = 20;
+    var chartHeight = barHeight * (list_authors.length+1);
 
+    var margin = {top: 0, right: 10, bottom: 10, left: 10};
     var rowChart = notes.append("svg")
       .attr("class", "rowChart")
-      .attr("width", chartWidth)
-      .attr("height", barHeight * (list_authors.length+1));
+      .attr("width", chartWidth + margin.left + margin.right)
+      .attr("height", chartHeight + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     rowChart.append("g").attr("class", "bars");
     rowChart.append("g").attr("class", "xaxis");
@@ -307,7 +310,9 @@ function updateNotes(d) {
     .attr("x2", function(d) { return Math.floor(xScale(d)); })
     .attr("y1", 0)
     .attr("y2", barHeight * list_authors.length)
-    .attr("stroke", "#ccc");
+    .attr("stroke", "#ccc")
+    .attr("stroke-dasharray", "5,5")
+    .attr("stroke-width", 1);
 
     xaxis.append("text")
     .attr("x", function(d) { return Math.floor(xScale(d)); })
@@ -315,6 +320,20 @@ function updateNotes(d) {
     .attr("dy", 5)
     .attr("text-anchor", "middle")
     .text(function(d) { return d; });
+
+    rowChart.append("line")
+    .attr("x1", 0)
+    .attr("y1", 0)
+    .attr("x2", 0)
+    .attr("y2", barHeight * list_authors.length)
+    .attr("stroke", "#000");
+
+    rowChart.append("line")
+    .attr("x1", 0)
+    .attr("y1", barHeight * list_authors.length)
+    .attr("x2", xScale(maxDomain))
+    .attr("y2", barHeight * list_authors.length)
+    .attr("stroke", "#000");
 
     var bars = rowChart.select(".bars").selectAll("g")
      .data(list_authors)
