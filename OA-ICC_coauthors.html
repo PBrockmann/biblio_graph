@@ -249,7 +249,7 @@ function updateNotes(d) {
     notes.selectAll('*').remove();
 
     notes.append('h3').text(d.name);
-    notes.append('p').text("Number of publications: " + d.nb);
+    notes.append('p').text("Number of publications: " + d.nb).style("font-weight", "bold");
     notes.append('p').text("Co-authors (from the top50):");
     var list_authors = [];
     graph.links.forEach(function(link){
@@ -335,18 +335,18 @@ function updateNotes(d) {
     bars.append("text")
     .text(function(d) { return d.value; })
     .attr("x", function(d) { return xScale(d.value); })
-    .attr("y", function(d, i) { return i * barHeight + barHeight/2; })
+    .attr("y", function(d, i) { return i * barHeight; })
     .attr("dx", -3)
-    .attr("dy", ".35em")
+    .attr("dy", "1.25em")
     .attr("text-anchor", "end")
     .style("font-weight", "bold");
 
     bars.append("text")
     .text(function(d) { return d.name; })
     .attr("x", 0)
-    .attr("y", function(d, i) { return i * barHeight + barHeight/2; })
+    .attr("y", function(d, i) { return i * barHeight; })
     .attr("dx", -5)
-    .attr("dy", ".35em")
+    .attr("dy", "1.25em")
     .attr("text-anchor", "end");
     //-----------------------------------
 
