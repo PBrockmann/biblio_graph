@@ -11,7 +11,7 @@
 <link href="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/themes/ui-lightness/jquery-ui.min.css" rel="stylesheet" type="text/css">
 
 <style>
-#graph {
+#graphLayout {
     float: left;
     position: relative;
 }
@@ -20,7 +20,7 @@
     margin-left: 20px;
     font: 12px sans-serif;
 }
-.chart rect {
+.rowChart rect {
    stroke: gray;
 }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
@@ -58,24 +58,19 @@ $(document).ready(function(){
 
 var width = 800;
 var height = 800;
-var svg = d3.select("#graph").append("svg")
+var graphLayout = d3.select("#graphLayout").append("svg")
         .attr("width", width)
         .attr("height", height);
 
-var notes = d3.select('#notes')
-    .style({
-        'width': 1200-width + 'px',
-        'height': height + 'px'
-    });
-     
 var color = d3.scale.category20();
 
 var nodetip = d3.tip()
     .attr('class', 'd3-tip nodetip')
+    .offset([-20, 0])
     .html(function (d) {
-        return  d.name + ': ' + d.nb + " publications";
+        return d.nb + " publications";
     });
-svg.call(nodetip);
+graphLayout.call(nodetip);
     
 var force = d3.layout.force()
     .charge(-500)
@@ -108,8 +103,8 @@ maxCoauthors = graph.links[0].value;
 console.log("maxPublications: ", maxPublications);
 console.log("maxCoauthors: ", maxCoauthors);
 
-var link = svg.selectAll(".link")
-var link = svg.selectAll(".link")
+var link = graphLayout.selectAll(".link")
+var link = graphLayout.selectAll(".link")
     .data(graph.links)
     .enter().append("line")
     .attr("class", "link")
@@ -119,27 +114,24 @@ var link = svg.selectAll(".link")
     return 10*(d.value/maxCoauthors);  
     });
 
-var node = svg.selectAll(".node")
+var node = graphLayout.selectAll(".node")
     .data(graph.nodes)
     .enter().append("g")
     .attr("class", "node")
     .call(force.drag)
-    //.on('mouseover', nodetip.show)
     .on("mouseover", nodemouseover)
     .on("mouseout", nodemouseout)
     .on('click', connectedNodes)
     .on('dblclick', resetLinks);
 
 node.append("circle")
-    .attr("r", function (d) {
-    return 20*(d.nb/maxPublications);}) 
-    .style("fill", function (d) {
-    return color(d.group);
-    })
+    .attr("r", function (d) { return 20*(d.nb/maxPublications);}) 
+    .style("fill", function (d) { return color(d.group); })
     .attr("stroke", "black")
     .attr("stroke-width", 1);
 
-function nodemouseover() {
+function nodemouseover(d) {
+  nodetip.show(d);
   var selectedNode = d3.select(this);
   selectedNode.select("circle").transition()
       .duration(750)
@@ -149,7 +141,8 @@ function nodemouseover() {
       .style("font-weight", "bold");
 }
 
-function nodemouseout() {
+function nodemouseout(d) {
+  nodetip.hide(d);
   var selectedNode = d3.select(this);
   selectedNode.select("circle").transition()
       .duration(750)
@@ -165,32 +158,16 @@ node.append("text")
       .text(function(d) { return d.name });
 
 force.on("tick", function () {
-    link.attr("x1", function (d) {
-        return d.source.x;
-    })
-        .attr("y1", function (d) {
-        return d.source.y;
-    })
-        .attr("x2", function (d) {
-        return d.target.x;
-    })
-        .attr("y2", function (d) {
-        return d.target.y;
-    });
+    link.attr("x1", function (d) { return d.source.x; })
+        .attr("y1", function (d) { return d.source.y; })
+        .attr("x2", function (d) { return d.target.x; })
+        .attr("y2", function (d) { return d.target.y; });
     
-    d3.selectAll("circle").attr("cx", function (d) {
-        return d.x;
-    })
-        .attr("cy", function (d) {
-        return d.y;
-    });
+    d3.selectAll("circle").attr("cx", function (d) { return d.x; })
+        .attr("cy", function (d) { return d.y; });
 
-    d3.selectAll("text").attr("x", function (d) {
-        return d.x;
-    })
-        .attr("y", function (d) {
-        return d.y;
-    });
+    d3.selectAll("text").attr("x", function (d) { return d.x; })
+        .attr("y", function (d) { return d.y; });
     
 });
     
@@ -252,7 +229,7 @@ $("#search").on("autocompleteclose", function() {
     var selectedVal = $('#search').val();
      
     if (selectedVal) {
-    var d = svg.selectAll(".node").filter(function (d, i) {
+    var d = graphLayout.selectAll(".node").filter(function (d, i) {
         return d.name == selectedVal;
     });
     d = d.node().__data__;
@@ -267,8 +244,11 @@ $("#search").on("autocompleteclose", function() {
     }
 });
 
+var notes = d3.select('#notes');
+
 function updateNotes(d) {
     notes.selectAll('*').remove();
+
     notes.append('h3').text(d.name);
     notes.append('p').text("Number of publications: " + d.nb);
     notes.append('p').text("Co-authors (from the top50):");
@@ -292,17 +272,17 @@ function updateNotes(d) {
     //});
 
     //-----------------------------------
-    // Build a d3 rwo chart
+    // Build a row chart
     var chartWidth = 300;
     var barHeight = 20;
 
-    var chart = notes.append("svg")
-      .attr("class", "chart")
+    var rowChart = notes.append("svg")
+      .attr("class", "rowChart")
       .attr("width", chartWidth)
       .attr("height", barHeight * (list_authors.length+1));
 
-    chart.append("g").attr("class", "bars");
-    chart.append("g").attr("class", "xaxis");
+    rowChart.append("g").attr("class", "bars");
+    rowChart.append("g").attr("class", "xaxis");
 
     // maxDomain is the max of publications round by 10
     var maxDomain = 40;
@@ -317,7 +297,7 @@ function updateNotes(d) {
       .domain([0, maxDomain])
       .range(colors);
 
-    var xaxis = chart.select(".xaxis").selectAll("g")
+    var xaxis = rowChart.select(".xaxis").selectAll("g")
      .data(xScale.ticks(colorsNb + 1))
      .enter()
      .append("g");
@@ -336,7 +316,7 @@ function updateNotes(d) {
     .attr("text-anchor", "middle")
     .text(function(d) { return d; });
 
-    var bars = chart.select(".bars").selectAll("g")
+    var bars = rowChart.select(".bars").selectAll("g")
      .data(list_authors)
      .enter()
      .append("g");
@@ -378,7 +358,7 @@ function updateNotes(d) {
 
 <div id='container'>
 	<div class='ui-widget'><input id='search'></div>
-	<div id='graph'></div>
+	<div id='graphLayout'></div>
         <div id='notes'></div>
 </div>
   
