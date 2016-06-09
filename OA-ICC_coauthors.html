@@ -276,7 +276,7 @@ function updateNotes(d) {
     var barHeight = 20;
     var chartHeight = barHeight * (list_authors.length+1);
 
-    var margin = {top: 0, right: 10, bottom: 10, left: 10};
+    var margin = {top: 0, right: 10, bottom: 10, left: 100};
     var rowChart = notes.append("svg")
       .attr("class", "rowChart")
       .attr("width", chartWidth + margin.left + margin.right)
@@ -295,7 +295,8 @@ function updateNotes(d) {
       .range([0, chartWidth]);
 
     var colorsNb = 8;    // maxDomain / 5
-    var colors = colorbrewer["YlGnBu"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
+    //var colors = colorbrewer["YlGnBu"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
+    var colors = colorbrewer["YlOrRd"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
     var colorScale = d3.scale.quantize()
       .domain([0, maxDomain])
       .range(colors);
@@ -306,34 +307,19 @@ function updateNotes(d) {
      .append("g");
 
     xaxis.append("line")
-    .attr("x1", function(d) { return Math.floor(xScale(d)); })
-    .attr("x2", function(d) { return Math.floor(xScale(d)); })
+    .attr("x1", function(d) { return xScale(d); })
+    .attr("x2", function(d) { return xScale(d); })
     .attr("y1", 0)
     .attr("y2", barHeight * list_authors.length)
     .attr("stroke", "#ccc")
-    .attr("stroke-dasharray", "5,5")
-    .attr("stroke-width", 1);
+    .attr("stroke-width", 0.5);
 
     xaxis.append("text")
-    .attr("x", function(d) { return Math.floor(xScale(d)); })
+    .attr("x", function(d) { return xScale(d); })
     .attr("y", barHeight * list_authors.length + barHeight/2)
     .attr("dy", 5)
     .attr("text-anchor", "middle")
     .text(function(d) { return d; });
-
-    rowChart.append("line")
-    .attr("x1", 0)
-    .attr("y1", 0)
-    .attr("x2", 0)
-    .attr("y2", barHeight * list_authors.length)
-    .attr("stroke", "#000");
-
-    rowChart.append("line")
-    .attr("x1", 0)
-    .attr("y1", barHeight * list_authors.length)
-    .attr("x2", xScale(maxDomain))
-    .attr("y2", barHeight * list_authors.length)
-    .attr("stroke", "#000");
 
     var bars = rowChart.select(".bars").selectAll("g")
      .data(list_authors)
@@ -342,22 +328,24 @@ function updateNotes(d) {
 
     bars.append("rect")
     .attr("y", function(d, i) { return i * barHeight; })
-    .attr("width", function(d) { return Math.floor(xScale(d.value)); })
+    .attr("width", function(d) { return xScale(d.value); })
     .attr("height", barHeight)
     .attr("fill", function(d) { return colorScale(d.value); });
 
     bars.append("text")
     .text(function(d) { return d.value; })
-    .attr("x", function(d) { return Math.floor(xScale(d.value)); })
+    .attr("x", function(d) { return xScale(d.value); })
     .attr("y", function(d, i) { return i * barHeight + barHeight/2; })
     .attr("dx", -3)
     .attr("dy", ".35em")
-    .attr("text-anchor", "end");
+    .attr("text-anchor", "end")
+    .style("font-weight", "bold");
 
     bars.append("text")
     .text(function(d) { return d.name; })
-    .attr("x", xScale(maxDomain))
+    .attr("x", 0)
     .attr("y", function(d, i) { return i * barHeight + barHeight/2; })
+    .attr("dx", -5)
     .attr("dy", ".35em")
     .attr("text-anchor", "end");
     //-----------------------------------
