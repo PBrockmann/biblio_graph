@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<script type='text/javascript' src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script type='text/javascript' src="http://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.6.7/d3-tip.min.js"></script>
+<script type='text/javascript' src="http://d3js.org/colorbrewer.v1.min.js"></script>
+<script type='text/javascript' src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<link href="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/themes/ui-lightness/jquery-ui.min.css" rel="stylesheet" type="text/css">
+
+<style>
+#graph {
+    float: left;
+    position: relative;
+}
+#notes {
+    float: left;
+    margin-left: 20px;
+    font: 12px sans-serif;
+}
+.chart rect {
+   stroke: gray;
+}
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
+    font-family: sans-serif;
+    font-size: 12px;
+}
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+.node text {
+  font: 10px sans-serif;
+  font-weight: normal;
+}
+.d3-tip {
+    font-weight: bold;
+    position: absolute;
+    padding: 5px;
+    text-align: left;
+    font: 12px sans-serif;
+    color: #000;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #000;
+    border-radius: 8px;
+}
+.nodetip {
+    background: #AAA;
+}
+</style>
+
+<script type='text/javascript'>
+
+$(document).ready(function(){
+
+var width = 800;
+var height = 800;
+var svg = d3.select("#graph").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+var notes = d3.select('#notes')
+    .style({
+        'width': 1200-width + 'px',
+        'height': height + 'px'
+    });
+     
+var color = d3.scale.category20();
+
+var nodetip = d3.tip()
+    .attr('class', 'd3-tip nodetip')
+    .html(function (d) {
+        return  d.name + ': ' + d.nb + " publications";
+    });
+svg.call(nodetip);
+    
+var force = d3.layout.force()
+    .charge(-500)
+    .linkDistance(function (d) {return 500/d.value;})
+    .size([width, height]);
+
+  
+//===================
+d3.json("data_corrected.json", function(error, graph) {
+  if (error) throw error;
+
+//Creates the graph data structure out of the json data
+force.nodes(graph.nodes)
+    .links(graph.links)
+    .gravity(.8)
+    .start();
+
+// sort nodes to get max
+graph.nodes.sort(function(a,b) {
+        return b.nb - a.nb;
+});
+maxPublications = graph.nodes[0].nb;
+
+// sort links to get max
+graph.links.sort(function(a,b) {
+        return b.value - a.value;
+});
+maxCoauthors = graph.links[0].value;
+
+console.log("maxPublications: ", maxPublications, "maxCoauthors: ", maxCoauthors);
+
+var link = svg.selectAll(".link")
+var link = svg.selectAll(".link")
+    .data(graph.links)
+    .enter().append("line")
+    .attr("class", "link")
+    .style("stroke-width", function (d) {
+    //return Math.sqrt(d.value);
+    //return d.value;
+    return 10*(d.value/maxCoauthors);  
+    });
+
+var node = svg.selectAll(".node")
+    .data(graph.nodes)
+    .enter().append("g")
+    .attr("class", "node")
+    .call(force.drag)
+    //.on('mouseover', nodetip.show)
+    .on("mouseover", nodemouseover)
+    .on("mouseout", nodemouseout)
+    .on('click', connectedNodes);
+
+node.append("circle")
+    .attr("r", function (d) {
+    return 20*(d.nb/maxPublications);}) 
+    .style("fill", function (d) {
+    return color(d.group);
+    })
+    .attr("stroke", "black")
+    .attr("stroke-width", 1);
+
+function nodemouseover() {
+  var selectedNode = d3.select(this);
+  selectedNode.select("circle").transition()
+      .duration(750)
+      .attr("stroke-width", 3);
+  selectedNode.select("text").transition()
+      .duration(750)
+      .style("font-weight", "bold");
+}
+
+function nodemouseout() {
+  var selectedNode = d3.select(this);
+  selectedNode.select("circle").transition()
+      .duration(750)
+      .attr("stroke-width", 1);
+  selectedNode.select("text").transition()
+      .duration(750)
+      .style("font-weight", "normal");
+}
+
+node.append("text")
+      .attr("dx", 10)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name });
+
+force.on("tick", function () {
+    link.attr("x1", function (d) {
+        return d.source.x;
+    })
+        .attr("y1", function (d) {
+        return d.source.y;
+    })
+        .attr("x2", function (d) {
+        return d.target.x;
+    })
+        .attr("y2", function (d) {
+        return d.target.y;
+    });
+    
+    d3.selectAll("circle").attr("cx", function (d) {
+        return d.x;
+    })
+        .attr("cy", function (d) {
+        return d.y;
+    });
+
+    d3.selectAll("text").attr("x", function (d) {
+        return d.x;
+    })
+        .attr("y", function (d) {
+        return d.y;
+    });
+    
+});
+    
+//---Insert-------
+
+//Toggle stores whether the highlighting is on
+var toggle = 0;
+
+//Create an array logging what is connected to what
+var linkedByIndex = {};
+for (var i = 0; i < graph.nodes.length; i++) {
+    linkedByIndex[i + "," + i] = 1;
+};
+graph.links.forEach(function (d) {
+    linkedByIndex[d.source.index + "," + d.target.index] = 1;
+});
+
+//This function looks up whether a pair are neighbours  
+function neighboring(a, b) {
+    return linkedByIndex[a.index + "," + b.index];
+}
+
+function connectedNodes() {
+    if (toggle == 0) {
+        //Reduce the opacity of all but the neighbouring nodes
+        var d = d3.select(this).node().__data__;  
+        node.style("opacity", function (o) {
+            return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
+        });
+        
+        link.style("opacity", function (o) {
+            return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+        });
+        
+        toggle = 1;
+    	updateNotes(d);
+
+    } else {
+        //Put them back to opacity=1
+        node.style("opacity", 1);
+        link.style("opacity", 1);
+        toggle = 0;
+    }
+}
+
+//---End Insert---    
+    
+//---Insert------
+var optArray = [];
+for (var i = 0; i < graph.nodes.length - 1; i++) {
+    optArray.push(graph.nodes[i].name);
+}
+
+optArray = optArray.sort();
+
+$("#search").autocomplete({
+        source: optArray
+});
+   
+$("#search").on("autocompleteopen", function() {
+    node.style("opacity", 1);
+    link.style("opacity", 1);
+});
+
+$("#search").on("autocompleteclose", function() {
+    //Reduce the opacity of all but the neighbouring nodes
+    var selectedVal = $('#search').val();
+     
+    if (selectedVal) {
+    var d = svg.selectAll(".node").filter(function (d, i) {
+        return d.name == selectedVal;
+    });
+    d = d.node().__data__;
+    node.style("opacity", function (o) {
+        return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
+    });
+    
+    link.style("opacity", function (o) {
+        return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+    });
+    toggle = 1;
+    updateNotes(d);
+    }
+});
+
+function updateNotes(d) {
+    notes.selectAll('*').remove();
+    notes.append('h3').text(d.name);
+    notes.append('p').text("Number of publications: " + d.nb);
+    notes.append('p').text("Co-authors (from the top50):");
+    var list_authors = [];
+    graph.links.forEach(function(link){
+            if (d.index==link.source.index) {
+    		list_authors.push({name: link.target.name, value: link.value});
+	    } 
+	    if (d.index==link.target.index) {
+    		list_authors.push({name: link.source.name, value: link.value});
+	    }
+    });
+    list_authors.sort(function(a,b) {
+        return b.value - a.value;
+    });
+
+    //-----------------------------------
+    //var list = notes.append('ul');
+    //list_authors.forEach(function(author){
+    //        	list.append('li').text(author.name + ': ' + author.value);
+    //});
+
+    //-----------------------------------
+    // Build a d3 rwo chart
+    chartWidth = 300;
+    var chart = notes.append("svg")
+      .attr("class", "chart")
+      .attr("width", chartWidth)
+      .attr("height", 20 * (list_authors.length+1));
+
+    chart.append("g").attr("class", "bars");
+    chart.append("g").attr("class", "xaxis");
+
+    // maxDomain is the max of publications round by 10
+    var maxDomain = 40;
+
+    var xScale = d3.scale.linear()
+      .domain([0, maxDomain])
+      .range([0, chartWidth]);
+
+    var colorsNb = 8;
+    var colors = colorbrewer["YlGnBu"][colorsNb];
+    var colorScale = d3.scale.quantize()
+      .domain([0, maxDomain])
+      .range(colors);
+
+    var xaxis = chart.select(".xaxis").selectAll("g")
+     .data(xScale.ticks(colorsNb + 1))
+     .enter()
+     .append("g");
+
+    xaxis.append("line")
+    .attr("x1", xScale)
+    .attr("x2", xScale)
+    .attr("y1", 0)
+    .attr("y2", 20 * list_authors.length)
+    .attr("stroke", "#ccc");
+
+    xaxis.append("text")
+    .attr("x", xScale)
+    .attr("y", 20 * list_authors.length + 10)
+    .attr("dy", 5)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return d; });
+
+    var bars = chart.select(".bars").selectAll("g")
+     .data(list_authors)
+     .enter()
+     .append("g");
+
+    bars.append("rect")
+    .attr("y", function(d, i) { return i * 20; })
+    .attr("width", function(d) { return xScale(d.value); })
+    .attr("height", 20)
+    .attr("fill", function(d) { return colorScale(d.value); });
+
+    bars.append("text")
+    .text(function(d) { return d.value; })
+    .attr("x", function(d) { return xScale(d.value); })
+    .attr("y", function(d, i) { return i * 20 + 10; })
+    .attr("dx", -3)
+    .attr("dy", ".35em")
+    .attr("text-anchor", "end");
+
+    bars.append("text")
+    .text(function(d) { return d.name; })
+    .attr("x", xScale(maxDomain))
+    .attr("y", function(d, i) { return i * 20 + 10; })
+    .attr("dy", ".35em")
+    .attr("text-anchor", "end");
+    //-----------------------------------
+
+}
+
+//===================
+});
+    
+})
+
+</script>
+
+</head>
+
+<body>
+
+<div id='container'>
+	<div class='ui-widget'><input id='search'></div>
+	<div id='graph'></div>
+        <div id='notes'></div>
+</div>
+  
+</body>
+
+</html>
