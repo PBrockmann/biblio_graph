@@ -105,7 +105,8 @@ graph.links.sort(function(a,b) {
 });
 maxCoauthors = graph.links[0].value;
 
-console.log("maxPublications: ", maxPublications, "maxCoauthors: ", maxCoauthors);
+console.log("maxPublications: ", maxPublications);
+console.log("maxCoauthors: ", maxCoauthors);
 
 var link = svg.selectAll(".link")
 var link = svg.selectAll(".link")
@@ -292,11 +293,13 @@ function updateNotes(d) {
 
     //-----------------------------------
     // Build a d3 rwo chart
-    chartWidth = 300;
+    var chartWidth = 300;
+    var barHeight = 20;
+
     var chart = notes.append("svg")
       .attr("class", "chart")
       .attr("width", chartWidth)
-      .attr("height", 20 * (list_authors.length+1));
+      .attr("height", barHeight * (list_authors.length+1));
 
     chart.append("g").attr("class", "bars");
     chart.append("g").attr("class", "xaxis");
@@ -323,12 +326,12 @@ function updateNotes(d) {
     .attr("x1", function(d) { return Math.floor(xScale(d)); })
     .attr("x2", function(d) { return Math.floor(xScale(d)); })
     .attr("y1", 0)
-    .attr("y2", 20 * list_authors.length)
+    .attr("y2", barHeight * list_authors.length)
     .attr("stroke", "#ccc");
 
     xaxis.append("text")
     .attr("x", function(d) { return Math.floor(xScale(d)); })
-    .attr("y", 20 * list_authors.length + 10)
+    .attr("y", barHeight * list_authors.length + barHeight/2)
     .attr("dy", 5)
     .attr("text-anchor", "middle")
     .text(function(d) { return d; });
@@ -339,15 +342,15 @@ function updateNotes(d) {
      .append("g");
 
     bars.append("rect")
-    .attr("y", function(d, i) { return i * 20; })
+    .attr("y", function(d, i) { return i * barHeight; })
     .attr("width", function(d) { return Math.floor(xScale(d.value)); })
-    .attr("height", 20)
+    .attr("height", barHeight)
     .attr("fill", function(d) { return colorScale(d.value); });
 
     bars.append("text")
     .text(function(d) { return d.value; })
     .attr("x", function(d) { return Math.floor(xScale(d.value)); })
-    .attr("y", function(d, i) { return i * 20 + 10; })
+    .attr("y", function(d, i) { return i * barHeight + barHeight/2; })
     .attr("dx", -3)
     .attr("dy", ".35em")
     .attr("text-anchor", "end");
@@ -355,7 +358,7 @@ function updateNotes(d) {
     bars.append("text")
     .text(function(d) { return d.name; })
     .attr("x", xScale(maxDomain))
-    .attr("y", function(d, i) { return i * 20 + 10; })
+    .attr("y", function(d, i) { return i * barHeight + barHeight/2; })
     .attr("dy", ".35em")
     .attr("text-anchor", "end");
     //-----------------------------------
