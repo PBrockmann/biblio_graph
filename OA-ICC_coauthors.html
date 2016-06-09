@@ -346,7 +346,7 @@ function updateNotes(d) {
 
     bars.append("text")
     .text(function(d) { return d.value; })
-    .attr("x", function(d) { return Math.floor(xScale(d.value); })
+    .attr("x", function(d) { return Math.floor(xScale(d.value)); })
     .attr("y", function(d, i) { return i * 20 + 10; })
     .attr("dx", -3)
     .attr("dy", ".35em")
