@@ -81,6 +81,8 @@ var force = d3.layout.force()
 d3.json("data_corrected.json", function(error, json) {
   if (error) throw error;
 
+// https://medium.com/@sxywu/understanding-the-force-ef1237017d5#.ekd5lav2b
+
 //Creates the graph data structure out of the json data
 force.nodes(json.nodes)
     .links(json.links)
@@ -108,16 +110,20 @@ var link = graphLayout.selectAll(".link")
     .enter().append("line")
     .attr("class", "link")
     .style("stroke-width", function (d) {
-    //return Math.sqrt(d.value);
-    //return d.value;
-    return 20*(d.value/maxCoauthors);  
+    	//return Math.sqrt(d.value);
+    	//return d.value;
+    	return 20*(d.value/maxCoauthors);  
     });
+
+// To avoid node drag that causes wrong placements of text from rowChart (?)
+var node_drag = d3.behavior.drag();
 
 var node = graphLayout.selectAll(".node")
     .data(json.nodes)
     .enter().append("g")
     .attr("class", "node")
-    .call(force.drag)
+    //.call(force.drag)
+    .call(node_drag)
     .on("mouseover", nodemouseover)
     .on("mouseout", nodemouseout)
     .on('click', connectedNodes)
