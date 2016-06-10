@@ -175,18 +175,20 @@ force.on("tick", function () {
 //Create an array logging what is connected to what
 var linkedByIndex = {};
 for (var i = 0; i < graph.nodes.length; i++) {
-    linkedByIndex[i + "," + i] = 1;
+   linkedByIndex[i + "," + i] = 1;
 };
 graph.links.forEach(function (d) {
-    linkedByIndex[d.source.index + "," + d.target.index] = 1;
+   linkedByIndex[d.source.index + "," + d.target.index] = 1;
 });
 
 //This function looks up whether a pair are neighbours  
 function neighboring(a, b) {
-    return linkedByIndex[a.index + "," + b.index];
+   return linkedByIndex[a.index + "," + b.index];
 }
 
 function resetLinks() {
+   notes.selectAll('*').remove();
+   force.start();
    node.style("opacity", 1);
    link.style("opacity", 1);
 }
@@ -246,6 +248,8 @@ $("#search").on("autocompleteclose", function() {
 var notes = d3.select('#notes');
 
 function updateNotes(d) {
+    force.stop();
+
     notes.selectAll('*').remove();
 
     notes.append('h3').text(d.name);
