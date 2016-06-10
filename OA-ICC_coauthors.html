@@ -78,43 +78,43 @@ var force = d3.layout.force()
 
   
 //===================
-d3.json("data_corrected.json", function(error, graph) {
+d3.json("data_corrected.json", function(error, json) {
   if (error) throw error;
 
 //Creates the graph data structure out of the json data
-force.nodes(graph.nodes)
-    .links(graph.links)
+force.nodes(json.nodes)
+    .links(json.links)
     .gravity(.8)
     .start();
 
 // sort nodes to get max
-graph.nodes.sort(function(a,b) {
+json.nodes.sort(function(a,b) {
         return b.nb - a.nb;
 });
-maxPublications = graph.nodes[0].nb;
+maxPublications = json.nodes[0].nb;
 
 // sort links to get max
-graph.links.sort(function(a,b) {
+json.links.sort(function(a,b) {
         return b.value - a.value;
 });
-maxCoauthors = graph.links[0].value;
+maxCoauthors = json.links[0].value;
 
 console.log("maxPublications: ", maxPublications);
 console.log("maxCoauthors: ", maxCoauthors);
 
 var link = graphLayout.selectAll(".link")
 var link = graphLayout.selectAll(".link")
-    .data(graph.links)
+    .data(json.links)
     .enter().append("line")
     .attr("class", "link")
     .style("stroke-width", function (d) {
     //return Math.sqrt(d.value);
     //return d.value;
-    return 10*(d.value/maxCoauthors);  
+    return 20*(d.value/maxCoauthors);  
     });
 
 var node = graphLayout.selectAll(".node")
-    .data(graph.nodes)
+    .data(json.nodes)
     .enter().append("g")
     .attr("class", "node")
     .call(force.drag)
@@ -174,10 +174,10 @@ force.on("tick", function () {
 
 //Create an array logging what is connected to what
 var linkedByIndex = {};
-for (var i = 0; i < graph.nodes.length; i++) {
+for (var i = 0; i < json.nodes.length; i++) {
    linkedByIndex[i + "," + i] = 1;
 };
-graph.links.forEach(function (d) {
+json.links.forEach(function (d) {
    linkedByIndex[d.source.index + "," + d.target.index] = 1;
 });
 
@@ -211,8 +211,8 @@ function connectedNodes() {
     
 //---Insert------
 var optArray = [];
-for (var i = 0; i < graph.nodes.length - 1; i++) {
-    optArray.push(graph.nodes[i].name);
+for (var i = 0; i < json.nodes.length - 1; i++) {
+    optArray.push(json.nodes[i].name);
 }
 
 optArray = optArray.sort();
@@ -254,9 +254,9 @@ function updateNotes(d) {
 
     notes.append('h3').text(d.name);
     notes.append('p').text("Number of publications: " + d.nb).style("font-weight", "bold");
-    notes.append('p').text("Co-authors (from the top50):");
+    notes.append('p').text("Co-authors from the top50").style("text-align", "center");
     var list_authors = [];
-    graph.links.forEach(function(link){
+    json.links.forEach(function(link){
             if (d.index==link.source.index) {
     		list_authors.push({name: link.target.name, value: link.value});
 	    } 
@@ -267,12 +267,6 @@ function updateNotes(d) {
     list_authors.sort(function(a,b) {
         return b.value - a.value;
     });
-
-    //-----------------------------------
-    //var list = notes.append('ul');
-    //list_authors.forEach(function(author){
-    //        	list.append('li').text(author.name + ': ' + author.value);
-    //});
 
     //-----------------------------------
     // Build a row chart
