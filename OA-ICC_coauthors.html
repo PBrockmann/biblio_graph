@@ -126,7 +126,7 @@ var node = graphLayout.selectAll(".node")
     .call(force.drag)
     .on("mouseover", nodemouseover)
     .on("mouseout", nodemouseout)
-    .on("mousedown", clearNotes)		// otherwise texts from rowChart is not set correctly when nodes are moved
+    .on("mousedown", clearNotes)		// otherwise texts from rowChart are not set correctly when nodes are moved
     .on('click', connectedNodes);
 
 node.append("circle")
@@ -263,62 +263,62 @@ $("#graphLayout").on("dblclick", function() {
 var notes = d3.select('#notes');
 
 function fillNotes(d) {
-    force.stop();
+   force.stop();
 
-    notes.append('h3').text(d.name);
-    notes.append('p').text("Number of publications: " + d.nb).style("font-weight", "bold");
-    notes.append('p').text("Co-authors from the top50").style("text-align", "center");
-    var list_authors = [];
-    json.links.forEach(function(link){
-            if (d.index==link.source.index) {
-    		list_authors.push({name: link.target.name, value: link.value});
-	    } 
-	    if (d.index==link.target.index) {
-    		list_authors.push({name: link.source.name, value: link.value});
-	    }
-    });
-    list_authors.sort(function(a,b) {
-        return b.value - a.value;
-    });
+   notes.append('h3').text(d.name);
+   notes.append('p').text("Number of publications: " + d.nb).style("font-weight", "bold");
+   notes.append('p').text("Co-authors from the top50").style("text-align", "center");
+   var list_authors = [];
+   json.links.forEach(function(link){
+           if (d.index==link.source.index) {
+   		list_authors.push({name: link.target.name, value: link.value});
+           } 
+           if (d.index==link.target.index) {
+   		list_authors.push({name: link.source.name, value: link.value});
+           }
+   });
+   list_authors.sort(function(a,b) {
+       return b.value - a.value;
+   });
 
-    //-----------------------------------
-    // Build a row chart
-    var chartWidth = 300;
-    var barHeight = 20;
-    var chartHeight = barHeight * (list_authors.length+1);
+   //-----------------------------------
+   // Build a row chart
+   var chartWidth = 300;
+   var barHeight = 20;
+   var chartHeight = barHeight * (list_authors.length+1);
 
-    var margin = {top: 0, right: 10, bottom: 10, left: 100};
-    var rowChart = notes.append("svg")
+   var margin = {top: 0, right: 10, bottom: 10, left: 100};
+   var rowChart = notes.append("svg")
       .attr("class", "rowChart")
       .attr("width", chartWidth + margin.left + margin.right)
       .attr("height", chartHeight + margin.top + margin.bottom)
-  .append("g")
+   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    rowChart.append("g").attr("class", "bars");
-    rowChart.append("g").attr("class", "xaxis");
+   rowChart.append("g").attr("class", "bars");
+   rowChart.append("g").attr("class", "xaxis");
 
-    // maxDomain is the max of publications round by 10
-    var maxDomain = 60;
-    var delta = 10;
+   // maxDomain is the max of publications round by 10
+   var maxDomain = 60;
+   var delta = 10;
 
-    var xScale = d3.scale.linear()
+   var xScale = d3.scale.linear()
       .domain([0, maxDomain])
       .range([0, chartWidth]);
 
-    var colorsNb = maxDomain / delta;  			// Must be integer and <= 9 
-    //var colors = colorbrewer["YlGnBu"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
-    var colors = colorbrewer["YlOrRd"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
-    var colorScale = d3.scale.quantize()
+   var colorsNb = maxDomain / delta;  			// Must be integer and <= 9 
+   //var colors = colorbrewer["YlGnBu"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
+   var colors = colorbrewer["YlOrRd"][colorsNb];	// Limited to 9 see http://d3js.org/colorbrewer.v1.js
+   var colorScale = d3.scale.quantize()
       .domain([0, maxDomain])
       .range(colors);
 
-    var xaxis = rowChart.select(".xaxis").selectAll("g")
+   var xaxis = rowChart.select(".xaxis").selectAll("g")
      .data(xScale.ticks(colorsNb + 1))
      .enter()
      .append("g");
 
-    xaxis.append("line")
+   xaxis.append("line")
     .attr("x1", function(d) { return xScale(d); })
     .attr("x2", function(d) { return xScale(d); })
     .attr("y1", 0)
@@ -326,25 +326,25 @@ function fillNotes(d) {
     .attr("stroke", "#ccc")
     .attr("stroke-width", 0.5);
 
-    xaxis.append("text")
+   xaxis.append("text")
     .attr("x", function(d) { return xScale(d); })
     .attr("y", barHeight * list_authors.length + barHeight/2)
     .attr("dy", 5)
     .attr("text-anchor", "middle")
     .text(function(d) { return d; });
 
-    var bars = rowChart.select(".bars").selectAll("g")
+   var bars = rowChart.select(".bars").selectAll("g")
      .data(list_authors)
      .enter()
      .append("g");
 
-    bars.append("rect")
+   bars.append("rect")
     .attr("y", function(d, i) { return i * barHeight; })
     .attr("width", function(d) { return xScale(d.value); })
     .attr("height", barHeight)
     .attr("fill", function(d) { return colorScale(d.value); });
 
-    bars.append("text")
+   bars.append("text")
     .text(function(d) { return d.value; })
     .attr("x", function(d) { return xScale(d.value); })
     .attr("y", function(d, i) { return i * barHeight; })
@@ -352,7 +352,7 @@ function fillNotes(d) {
     .attr("dy", "1.25em")
     .attr("text-anchor", "end");
 
-    bars.append("text")
+   bars.append("text")
     .text(function(d) { return d.name; })
     .attr("x", 0)
     .attr("y", function(d, i) { return i * barHeight; })
