@@ -89,6 +89,10 @@ force.nodes(json.nodes)
     .gravity(.8)
     .start();
 
+var n = json.nodes.length;
+//for (var i = 10000 ; i > 0; --i) force.tick();
+force.start();
+
 // sort nodes to get max
 json.nodes.sort(function(a,b) {
         return b.nb - a.nb;
@@ -115,19 +119,15 @@ var link = graphLayout.selectAll(".link")
     	return 20*(d.value/maxCoauthors);  
     });
 
-// To avoid node drag that causes wrong placements of text from rowChart (?)
-var node_drag = d3.behavior.drag();
-
 var node = graphLayout.selectAll(".node")
     .data(json.nodes)
     .enter().append("g")
     .attr("class", "node")
-    //.call(force.drag)
-    .call(node_drag)
+    .call(force.drag)
     .on("mouseover", nodemouseover)
     .on("mouseout", nodemouseout)
-    .on('click', connectedNodes)
-    .on('dblclick', resetLinks);
+    .on("mousedown", clearNotes)		// otherwise texts from rowChart is not set correctly when nodes are moved
+    .on('click', connectedNodes);
 
 node.append("circle")
     .attr("r", function (d) { return 20*(d.nb/maxPublications);}) 
@@ -192,9 +192,14 @@ function neighboring(a, b) {
    return linkedByIndex[a.index + "," + b.index];
 }
 
-function resetLinks() {
+function clearNotes() {
    notes.selectAll('*').remove();
-   force.start();
+   $("#search").val("");
+}
+
+function resetLinks() {
+   clearNotes();
+   force.resume();
    node.style("opacity", 1);
    link.style("opacity", 1);
 }
@@ -210,7 +215,7 @@ function connectedNodes() {
        return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
    });
    
-   updateNotes(d);
+   fillNotes(d);
 }
 
 //---End Insert---    
@@ -247,16 +252,18 @@ $("#search").on("autocompleteclose", function() {
     link.style("opacity", function (o) {
         return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
     });
-    updateNotes(d);
+    fillNotes(d);
     }
+});
+
+$("#graphLayout").on("dblclick", function() {
+   resetLinks();
 });
 
 var notes = d3.select('#notes');
 
-function updateNotes(d) {
+function fillNotes(d) {
     force.stop();
-
-    notes.selectAll('*').remove();
 
     notes.append('h3').text(d.name);
     notes.append('p').text("Number of publications: " + d.nb).style("font-weight", "bold");
