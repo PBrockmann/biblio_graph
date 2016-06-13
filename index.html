@@ -10,14 +10,21 @@
 <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <link href="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/themes/ui-lightness/jquery-ui.min.css" rel="stylesheet" type="text/css">
 
+<script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+<link href="sticky-footer-navbar.css" rel="stylesheet">
+
 <style>
 #graphLayout {
   float: left;
   position: relative;
+  margin-top: 100px;
+  margin-left: 50px;
 }
 #notes {
   float: left;
   margin-left: 20px;
+  margin-top: 150px;
   font: 12px sans-serif;
 }
 .rowChart rect {
@@ -31,6 +38,12 @@
 .link {
   stroke: #999;
   stroke-opacity: .7;
+}
+#search {
+  position: absolute;
+  left: 50px;
+  top: 80px;
+  z-index: 100;
 }
 .node text {
   font: 10px sans-serif;
@@ -50,12 +63,13 @@
     background: #AAA;
 }
 </style>
+<link href="non-responsive.css" rel="stylesheet" type="text/css">
 
 <script type='text/javascript'>
 
 $(document).ready(function(){
 
-var width = 800;
+var width = 600;
 var height = 800;
 var graphLayout = d3.select("#graphLayout").append("svg")
         .attr("width", width)
@@ -283,11 +297,11 @@ function fillNotes(d) {
 
    //-----------------------------------
    // Build a row chart
-   var chartWidth = 300;
+   var chartWidth = 400;
    var barHeight = 20;
    var chartHeight = barHeight * (list_authors.length+1);
 
-   var margin = {top: 0, right: 10, bottom: 10, left: 100};
+   var margin = {top: 0, right: 10, bottom: 10, left: 150};
    var rowChart = notes.append("svg")
       .attr("class", "rowChart")
       .attr("width", chartWidth + margin.left + margin.right)
@@ -374,12 +388,43 @@ function fillNotes(d) {
 
 <body>
 
-<div id='container'>
-	<div class='ui-widget'><input id='search'></div>
-	<div id='graphLayout'></div>
-        <div id='notes'></div>
-</div>
-  
-</body>
+<div id="wrap">
 
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="index.html">Ocean Acidification bibliographic</a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+       </div>
+
+       <div id='container'>
+        <div class='row'>
+	      <div class='ui-widget'><input id='search'></div>
+        </div>
+        <div class='row'>
+	      <div id='graphLayout'></div>
+              <div id='notes'></div>
+        </div>
+       </div>
+
+</div>
+
+<div id="footer">
+       <div class="container">
+		<p class="text-muted credit">Created by <a target="_blank" href="http://www.lsce.ipsl.fr/en"><span title="Climate and Environment Sciences Laboratory" style="font-weight:bold;">LSCE</span></a>&nbsp;<a target="_blank" href="http://www.lsce.ipsl.fr/en"><img src="img/LSCE_Icon.png" title="Climate and Environment Sciences Laboratory"/></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Version 1.0 - 2016/06/13</p>
+      </div><!-- /.container -->
+</div>
+
+</body>
 </html>
