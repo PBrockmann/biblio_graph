@@ -31,6 +31,9 @@
   stroke: gray;
   stroke-width: 2;  
 }
+#notes text {
+  font: 10px sans-serif;
+}
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
   font-family: sans-serif;
   font-size: 12px;
@@ -69,7 +72,7 @@
 
 $(document).ready(function(){
 
-var width = 600;
+var width = 800;
 var height = 800;
 var graphLayout = d3.select("#graphLayout").append("svg")
         .attr("width", width)
@@ -297,11 +300,11 @@ function fillNotes(d) {
 
    //-----------------------------------
    // Build a row chart
-   var chartWidth = 400;
+   var chartWidth = 300;
    var barHeight = 20;
    var chartHeight = barHeight * (list_authors.length+1);
 
-   var margin = {top: 0, right: 10, bottom: 10, left: 150};
+   var margin = {top: 0, right: 10, bottom: 10, left: 100};
    var rowChart = notes.append("svg")
       .attr("class", "rowChart")
       .attr("width", chartWidth + margin.left + margin.right)
