@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script type='text/javascript' src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script type='text/javascript' src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<style type="text/css">
+#graph {
+    float: left;
+    position: relative;
+    margin: 20px;
+}
+rect {
+   stroke: white;
+   fill: steelblue;
+}
+</style>
+</head>
+
+<body>
+
+<div id='graph'></div>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+// https://strongriley.github.io/d3/tutorial/bar-1.html
+
+var width = 800;
+var height = 1000;
+var svg = d3.select("#graph").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+svg.append("g").attr("class", "bars");
+svg.append("g").attr("class", "xaxis");
+
+var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 18, 23, 25 ];
+
+var xScale = d3.scale.linear()
+             .domain([0, 30])
+             .range([0, 500]);
+
+var xaxis = svg.select(".xaxis").selectAll("g")
+   .data(xScale.ticks(10))
+   .enter()
+   .append("g");
+
+xaxis.append("line")
+    .attr("x1", xScale)
+    .attr("x2", xScale)
+    .attr("y1", 0)
+    .attr("y2", 20 * dataset.length)
+    .attr("stroke", "#ccc");
+
+xaxis.append("text")
+    .attr("x", xScale)
+    .attr("y", 20 * dataset.length + 10)
+    .attr("dy", 5)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return d;});
+
+var bars = svg.select(".bars").selectAll("g")
+   .data(dataset)
+   .enter()
+   .append("g");
+
+bars.append("rect")
+   .attr("y", function(d, i) { return i * 20; })
+   .attr("width", function(d) { return xScale(d); })
+   .attr("height", 20)
+   .attr("fill", "steelblue"); 
+
+bars.append("text")
+   .text(function(d) { return d; })
+   .attr("text-anchor", "end")
+   .attr("x", function(d) { return xScale(d); })
+   .attr("y", function(d, i) { return (i+1)*20 - 5; })
+   .attr("dx", -5)
+   .attr("font-family", "sans-serif")
+   .attr("font-size", "10px")
+   .attr("fill", "white");
+
+svg.append("line")
+    .attr("y1", 0)
+    .attr("y2", 20 * dataset.length)
+    .attr("stroke", "#000");
+
+})
+		
+</script>
+
+
+</body>
+</html>
